@@ -1,0 +1,20 @@
+# Entornos
+.env
+.env.*
+
+# Base de datos
+db.sqlite3
+
+# Django
+__pycache__/
+*.pyc
+media/
+
+# Virtualenv
+venv/
+
+# IDE
+.vscode/
+
+# Logs
+*.log
