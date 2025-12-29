@@ -10,24 +10,24 @@
   <div>
     <label class="block text-sm font-medium">ID Material</label>
     <input type="text" name="id_material" value="{{ request.GET.id_material }}"
-      class="mt-1 block w-full rounded-md border-gray-300">
+      class="mt-1 block w-full rounded-md border border-gray-300">
   </div>
 
   <div>
     <label class="block text-sm font-medium">Name</label>
     <input type="text" name="name" value="{{ request.GET.name }}"
-      class="mt-1 block w-full rounded-md border-gray-300">
+      class="mt-1 block w-full rounded-md border border-gray-300">
   </div>
 
   <div>
     <label class="block text-sm font-medium">Material Type</label>
     <input type="text" name="material_type" value="{{ request.GET.material_type }}"
-      class="mt-1 block w-full rounded-md border-gray-300">
+      class="mt-1 block w-full rounded-md border border-gray-300">
   </div>
 
   <div>
     <label class="block text-sm font-medium">Status</label>
-    <select name="status" class="mt-1 block w-full rounded-md border-gray-300">
+    <select name="status" class="mt-1 block w-full rounded-md border border-gray-300">
       <option value="">All</option>
       <option value="Active" {% if request.GET.status == "Active" %}selected{% endif %}>Active</option>
       <option value="Inactive" {% if request.GET.status == "Inactive" %}selected{% endif %}>Inactive</option>
@@ -53,59 +53,83 @@
 </div>
 
 <div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
-<table class="min-w-full divide-y divide-gray-200">
-<thead>
-<tr>
-  <th>ID</th><th>Name</th><th>Description</th><th>Unit</th>
-  <th>Type</th><th>Status</th><th>User</th><th>Actions</th>
-</tr>
-</thead>
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead>
+            <tr>
+              <th>ID</th><th>Name</th><th>Description</th><th>Unit</th>
+              <th>Type</th><th>Status</th><th>User</th><th>Actions</th>
+            </tr>
+        </thead>
 
-<tbody>
-{% for material in page_obj %}
-<tr>
-  <td>{{ material.id_material }}</td>
-  <td>{{ material.name }}</td>
-  <td>{{ material.description }}</td>
-  <td>{{ material.unit }}</td>
-  <td>{{ material.material_type }}</td>
-  <td>
-    <span class="px-2 inline-flex rounded-full text-xs
-      {% if material.status == 'Active' %}
-        bg-green-100 text-green-800
-      {% else %}
-        bg-red-100 text-red-800
-      {% endif %}">
-      {{ material.status }}
-    </span>
-  </td>
-  <td>{{ material.created_by.username }}</td>
-  <td>
-    <a href="#" class="text-indigo-600">Edit</a>
-    <a href="#" class="text-red-600 ml-2">Delete</a>
-  </td>
-</tr>
-{% empty %}
-<tr>
-  <td colspan="8" class="text-center text-gray-500">No materials found</td>
-</tr>
-{% endfor %}
-</tbody>
-</table>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for material in page_obj %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ material.id_material }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ material.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ material.description }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ material.unit }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ material.material_type }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex leading-5 font-semibold rounded-full  {% if material.status == 'Active' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                  {{ material.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ material.created_by.username }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                <a href="#" class="text-red-600 hover:text-red-900 mr-4">Delete</a>
+              </td>
+            </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No materials found</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
 {% if page_obj.has_other_pages %}
 <div class="flex justify-center mt-6">
-{% if page_obj.has_previous %}
-<a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">‹</a>
-{% endif %}
+ <nav class="relative z-0 inline-flex rounded-md shadow overflow-hidden" aria-label="Pagination">
 
-<span class="mx-4">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {# PREVIOUS #}
+    {% if page_obj.has_previous %}
+    <a href="?page={{page_obj.previous_page_number}}&id_material={{request.GET.id_material}}&name={{request.GET.name}}&material_type={{request.GET.material_type}}&status={{request.GET.status}}"
+       class="px-3 py-2 bg-white border border-gray-300 text-gray-600 hover:bg-gray-100">
+       ‹
+    </a>
+    {% else %}
+    <span class="px-3 py-2 bg-gray-200 border border-gray-300 text-gray-400 cursor-not-allowed">‹</span>
+    {% endif %}
 
-{% if page_obj.has_next %}
-<a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">›</a>
-{% endif %}
+    {# PAGE NUMBERS #}
+    {% for i in page_obj.paginator.page_range %}
+      {% if page_obj.number == i %}
+        <span class="px-4 py-2 bg-[#233b6e] text-white font-semibold border border-gray-300">
+          {{ i }}
+        </span>
+      {% else %}
+        <a href="?page={{ i }}&id_material={{request.GET.id_material}}&name={{request.GET.name}}&material_type={{request.GET.material_type}}&status={{request.GET.status}}"
+           class="px-4 py-2 bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">
+          {{ i }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    {# NEXT #}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number}}&id_material={{request.GET.id_material}}&name={{request.GET.name}}&material_type={{request.GET.material_type}}&status={{request.GET.status}}"
+       class="px-3 py-2 bg-white border border-gray-300 text-gray-600 hover:bg-gray-100">
+       ›
+    </a>
+    {% else %}
+    <span class="px-3 py-2 bg-gray-200 border border-gray-300 text-gray-400 cursor-not-allowed">›</span>
+    {% endif %}
+
+ </nav>
 </div>
 {% endif %}
+
 
 </div>
 {% endblock %}
