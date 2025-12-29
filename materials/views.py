@@ -34,7 +34,7 @@ def materials_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'materials/materials_list.html', {'page_obj': page_obj})
+    return render(request, 'materials/material_list.html', {'page_obj': page_obj})
 
 
 @login_required

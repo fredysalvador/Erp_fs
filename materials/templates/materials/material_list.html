@@ -1,0 +1,111 @@
+{% extends "core/base.html" %}
+
+{% block title %}Materials{% endblock %}
+
+{% block content %}
+
+<div class="mb-6 p-4 border rounded-lg bg-gray-50">
+<form method="get" action="{% url 'materials:material_list' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+  <div>
+    <label class="block text-sm font-medium">ID Material</label>
+    <input type="text" name="id_material" value="{{ request.GET.id_material }}"
+      class="mt-1 block w-full rounded-md border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Name</label>
+    <input type="text" name="name" value="{{ request.GET.name }}"
+      class="mt-1 block w-full rounded-md border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Material Type</label>
+    <input type="text" name="material_type" value="{{ request.GET.material_type }}"
+      class="mt-1 block w-full rounded-md border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Status</label>
+    <select name="status" class="mt-1 block w-full rounded-md border-gray-300">
+      <option value="">All</option>
+      <option value="Active" {% if request.GET.status == "Active" %}selected{% endif %}>Active</option>
+      <option value="Inactive" {% if request.GET.status == "Inactive" %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+
+  <div class="md:col-span-4 flex justify-between mt-4">
+    <div class="space-x-2">
+      <button type="submit" class="bg-[#233b6e] text-white px-4 py-2 rounded">
+        Filter
+      </button>
+      <a href="{% url 'materials:material_list' %}" class="bg-gray-500 text-white px-4 py-2 rounded">
+        Clear
+      </a>
+    </div>
+
+    <a href="{% url 'materials:material_create' %}" class="bg-[#233b6e] text-white px-6 py-2 rounded">
+      Create New Material
+    </a>
+  </div>
+
+</form>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+<table class="min-w-full divide-y divide-gray-200">
+<thead>
+<tr>
+  <th>ID</th><th>Name</th><th>Description</th><th>Unit</th>
+  <th>Type</th><th>Status</th><th>User</th><th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+{% for material in page_obj %}
+<tr>
+  <td>{{ material.id_material }}</td>
+  <td>{{ material.name }}</td>
+  <td>{{ material.description }}</td>
+  <td>{{ material.unit }}</td>
+  <td>{{ material.material_type }}</td>
+  <td>
+    <span class="px-2 inline-flex rounded-full text-xs
+      {% if material.status == 'Active' %}
+        bg-green-100 text-green-800
+      {% else %}
+        bg-red-100 text-red-800
+      {% endif %}">
+      {{ material.status }}
+    </span>
+  </td>
+  <td>{{ material.created_by.username }}</td>
+  <td>
+    <a href="#" class="text-indigo-600">Edit</a>
+    <a href="#" class="text-red-600 ml-2">Delete</a>
+  </td>
+</tr>
+{% empty %}
+<tr>
+  <td colspan="8" class="text-center text-gray-500">No materials found</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-6">
+{% if page_obj.has_previous %}
+<a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">‹</a>
+{% endif %}
+
+<span class="mx-4">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+{% if page_obj.has_next %}
+<a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">›</a>
+{% endif %}
+</div>
+{% endif %}
+
+</div>
+{% endblock %}
