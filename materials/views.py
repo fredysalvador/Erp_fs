@@ -55,7 +55,7 @@ def material_create(request):
     else:
         form = MaterialForm()
 
-    return render(request, 'materials/materials_form.html', {'form': form})
+    return render(request, 'materials/material_form.html', {'form': form})
 
 @login_required
 def material_bulk_create(request):
