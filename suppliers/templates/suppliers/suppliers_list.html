@@ -1,0 +1,155 @@
+{% extends "core/base.html" %}
+
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+
+<div class="mb-6 p-4 border rounded-lg bg-gray-50">
+<form method="get" action="{% url 'suppliers:suppliers_list' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
+  <div>
+    <label class="block text-sm font-medium">ID Supplier</label>
+    <input type="text" name="id_supplier" value="{{ request.GET.id_supplier }}"
+      class="mt-1 block w-full rounded-md border border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Name</label>
+    <input type="text" name="name" value="{{ request.GET.name }}"
+      class="mt-1 block w-full rounded-md border border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Country</label>
+    <input type="text" name="country" value="{{ request.GET.country }}"
+      class="mt-1 block w-full rounded-md border border-gray-300">
+  </div>
+
+  <div>
+    <label class="block text-sm font-medium">Status</label>
+    <select name="status" class="mt-1 block w-full rounded-md border border-gray-300">
+      <option value="">All</option>
+      <option value="Active" {% if request.GET.status == "Active" %}selected{% endif %}>Active</option>
+      <option value="Inactive" {% if request.GET.status == "Inactive" %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+
+  <div class="md:col-span-4 flex justify-between mt-4">
+    <div class="space-x-2">
+      <button type="submit" class="bg-[#233b6e] text-white px-4 py-2 rounded">
+        Filter
+      </button>
+      <a href="{% url 'suppliers:suppliers_list' %}" class="bg-gray-500 text-white px-4 py-2 rounded">
+        Clear
+      </a>
+    </div>
+
+    <div class="flex items-center space-x-2 mt-4 md:mt-0">
+      <a href="?export=csv{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-300 hover:bg-green-700">
+        Export to CSV
+      </a>
+    </div>
+    {% if permissions.suppliers >= 2 %}
+    <a href="{% url 'suppliers:supplier_create' %}" class="bg-[#233b6e] text-white px-6 py-2 rounded">
+      Create New Supplier
+    </a>
+    {% endif %}
+  </div>
+
+</form>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow-md overflow-x-auto">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Supplier</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Country</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+              {% if permissions.suppliers >= 2 %}
+              <th scope="col" class="relative px-6 py-3">Actions</th>
+              {% endif %}
+            </tr>
+        </thead>
+
+        <tbody class="bg-white divide-y divide-gray-200">
+            {% for supplier in page_obj %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-left">{{ supplier.id_supplier }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">{{ supplier.name }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">{{ supplier.country }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">{{ supplier.category }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-left">
+                <span class="px-2 inline-flex leading-5 font-semibold rounded-full  {% if supplier.status == 'Active' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                  {{ supplier.status }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-left">{{ supplier.created_by.username }}</td>
+              {% if permissions.suppliers >= 2 %}
+              <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                <a href="{% url 'suppliers:supplier_edit' supplier.pk %}" class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</a>
+                <form action="{% url 'suppliers:supplier_delete' supplier.pk %}" method="post" class="inline-block">
+                  {% csrf_token %}
+                  <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-300" title="Delete" onclick="return confirm('Are you sure you want to delete this supplier?')">
+                    Delete
+                  </button>
+                </form>
+              </td>
+              {% endif %}
+            </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">No suppliers found</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+{% if page_obj.has_other_pages %}
+<div class="flex justify-center mt-6">
+ <nav class="relative z-0 inline-flex rounded-md shadow overflow-hidden" aria-label="Pagination">
+
+    {# PREVIOUS #}
+    {% if page_obj.has_previous %}
+    <a href="?page={{page_obj.previous_page_number}}&id_supplier={{request.GET.id_supplier}}&name={{request.GET.name}}&country={{request.GET.country}}&category={{request.GET.category}}&status={{request.GET.status}}"
+       class="px-3 py-2 bg-white border border-gray-300 text-gray-600 hover:bg-gray-100">
+       ‹
+    </a>
+    {% else %}
+    <span class="px-3 py-2 bg-gray-200 border border-gray-300 text-gray-400 cursor-not-allowed">‹</span>
+    {% endif %}
+
+    {# PAGE NUMBERS #}
+    {% for i in page_obj.paginator.page_range %}
+      {% if page_obj.number == i %}
+        <span class="px-4 py-2 bg-[#233b6e] text-white font-semibold border border-gray-300">
+          {{ i }}
+        </span>
+      {% else %}
+        <a href="?page={{ i }}&id_supplier={{request.GET.id_supplier}}&name={{request.GET.name}}&country={{request.GET.country}}&status={{request.GET.status}}"
+           class="px-4 py-2 bg-white text-gray-700 border border-gray-300 hover:bg-gray-100">
+          {{ i }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    {# NEXT #}
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number}}&id_supplier={{request.GET.id_supplier}}&name={{request.GET.name}}&country={{request.GET.country}}&status={{request.GET.status}}"
+       class="px-3 py-2 bg-white border border-gray-300 text-gray-600 hover:bg-gray-100">
+       ›
+    </a>
+    {% else %}
+    <span class="px-3 py-2 bg-gray-200 border border-gray-300 text-gray-400 cursor-not-allowed">›</span>
+    {% endif %}
+
+ </nav>
+</div>
+{% endif %}
+
+
+</div>
+{% endblock %}
