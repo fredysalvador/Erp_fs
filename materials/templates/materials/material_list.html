@@ -43,16 +43,28 @@
         Clear
       </a>
     </div>
-
-    <div class="flex items-center space-x-2 mt-4 md:mt-0">
+    
+    <div class="md:col-span-4 mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center"></div>
+      <!-- Export to CSV -->
+    <div class="flex justify-center">
       <a href="?export=csv{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-300 hover:bg-green-700">
         Export to CSV
       </a>
     </div>
+    <!-- Bulk Upload -->
+    <div class="flex justify-center">
+        <a href="{% url 'materials:material_bulk_create' %}"
+            class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition text-center">
+            Bulk Upload (CSV)
+        </a>
+    </div>
+    
     {% if permissions.materials >= 2 %}
-    <a href="{% url 'materials:material_create' %}" class="bg-[#233b6e] text-white px-6 py-2 rounded">
+    <div class="flex justify-end">
+    <a href="{% url 'materials:material_create' %}" class="bg-[#233b6e] text-white py-2 px-6 rounded-lg text-center transition-colors duration-300 hover:bg-[#1a2c53]">
       Create New Material
     </a>
+    </div>
     {% endif %}
   </div>
 

@@ -1,5 +1,7 @@
 {% extends "core/base.html" %}
 
+{% load static %}
+
 {% block title %}Suppliers{% endblock %}
 
 {% block content %}
@@ -44,15 +46,31 @@
       </a>
     </div>
 
-    <div class="flex items-center space-x-2 mt-4 md:mt-0">
-      <a href="?export=csv{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-300 hover:bg-green-700">
-        Export to CSV
-      </a>
+    <div class="md:col-span-4 mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 items-center"></div>
+      <!-- Export to CSV -->
+    <div class="flex justify-center">
+        <a href="?export=csv{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+            class="bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 transition text-center">
+            Export to CSV
+        </a>
     </div>
+
+    <!-- Bulk Upload -->
+    <div class="flex justify-center">
+        <a href="{% url 'suppliers:supplier_bulk_create' %}"
+            class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 transition text-center">
+            Bulk Upload (CSV)
+        </a>
+    </div>
+
+    <!-- Create New Supplier -->
     {% if permissions.suppliers >= 2 %}
-    <a href="{% url 'suppliers:supplier_create' %}" class="bg-[#233b6e] text-white px-6 py-2 rounded">
-      Create New Supplier
-    </a>
+    <div class="flex justify-end">
+        <a href="{% url 'suppliers:supplier_create' %}"
+            class="bg-[#233b6e] text-white font-semibold py-3 px-6 rounded-lg hover:bg-[#1a2c53] transition text-center">
+            Create New Supplier
+        </a>
+    </div>
     {% endif %}
   </div>
 
