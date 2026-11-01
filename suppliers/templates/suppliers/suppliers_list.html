@@ -23,8 +23,20 @@
 
   <div>
     <label class="block text-sm font-medium">Country</label>
-    <input type="text" name="country" value="{{ request.GET.country }}"
-      class="mt-1 block w-full rounded-md border border-gray-300">
+    <select
+         name="country"
+         id="country"
+         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring-indigo-200 focus:ring-opacity-50">
+         <option value="" {% if not request.GET.country %}selected{% endif %}>All</option>
+         {% for country_obj in all_countries %}
+       <option
+          value="{{ country_obj.name }}"
+          {% if request.GET.country == country_obj.name %}selected{% endif %}
+          >
+          {{ country_obj.name }}
+       </option>
+       {% endfor %}
+     </select>
   </div>
 
   <div>
@@ -101,7 +113,7 @@
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">{{ supplier.country }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-left">{{ supplier.category }}</td>
               <td class="px-6 py-4 whitespace-nowrap text-left">
-                <span class="px-2 inline-flex leading-5 font-semibold rounded-full  {% if supplier.status == 'Active' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                <span class="px-2 inline-flex leading-5 font-semibold rounded-full  {% if supplier.status.name == 'Active' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
                   {{ supplier.status }}
                 </span>
               </td>

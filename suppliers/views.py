@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Supplier
+from core.models import Status, Country, Currency
 from .forms import SupplierForm, CsvUploadForm
 from django.core.paginator import Paginator
 from django.http import HttpResponse
@@ -31,9 +32,17 @@ def suppliers_list(request):
     if name:
        suppliers_list = suppliers_list.filter(name__icontains=name)
     if country:
-       suppliers_list = suppliers_list.filter(country__icontains=country)
+           try:
+               country_obj = Country.objects.get(name__iexact=country)
+               suppliers_list = suppliers_list.filter(material_type=country_obj)
+           except Country.DoesNotExist:
+               suppliers_list = suppliers_list.none()
     if status:
-       suppliers_list = suppliers_list.filter(status=status)
+          try:
+              status_obj = Status.objects.get(name__iexact=status)
+              suppliers_list = suppliers_list.filter(status=status_obj)
+          except Status.DoesNotExist:
+              suppliers_list = suppliers_list.none()
 
     if request.GET.get('export')  == 'csv':
        response = HttpResponse(content_type='text/csv')
@@ -78,7 +87,24 @@ def suppliers_list(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    return render(request, 'suppliers/suppliers_list.html', {'page_obj': page_obj})
+    try:
+        all_statuses = Status.objects.all().order_by('name')
+    except NameError:
+        all_statuses = []
+
+    try:
+        all_countries = Country.objects.all().order_by('name')
+    except NameError:
+        all_countries = []
+
+    context = {
+        'page_obj': page_obj,
+        'all_statuses': all_statuses,
+        'all_countries': all_countries,
+    }
+
+    return render(request, 'suppliers/suppliers_list.html', context)
+
 
 
 @login_required
@@ -154,6 +180,24 @@ def supplier_bulk_create(request):
 
         if form.is_valid():
             csv_file = request.FILES['csv_file']
+            status_map = {
+            status.name.strip().lower(): status_map
+            for status in Status.object.all()
+        }
+            currency_map = {
+                currency.symbol.strip().lower: unit
+                for currency in Currency.objects.all()
+            }
+            currency_map.update({currency.name.strip().lower(): currency
+                for currency in Currency.objects.all()           
+            })
+            country_map = {
+                country.symbol.strip().lower: country
+                for country in Country.objects.all()
+            }
+            country_map.update({country.name.strip().lower(): country
+                for country in Country.objects.all()           
+            })
 
             try:
                 data_set = csv_file.read().decode('UTF-8')
@@ -184,6 +228,47 @@ def supplier_bulk_create(request):
                 for key,value in row.items():
                     cleaned_value = value.strip() if isinstance(value,str) else value
                     form_data[key] = cleaned_value
+
+                currency_value = form_data.get('unit','').sreip().lower()
+                currency_obj = currency_map.get(currency_value)
+                if currency_obj:
+                    form_data['unit'] = currency_obj.pk
+                else:
+                    error_records.append({
+                        'row':row_number,
+                        'data': row,
+                        'errors':{'unit':f'Unit "{currency_value}" not found or invalid.'}
+                    })
+                    continue
+
+
+                country_value = form_data.get('country','').sreip().lower()
+                country_obj = country_map.get(country_value)
+
+                if country_obj:
+                    form_data['country'] = country_obj.pk
+                else:
+                    error_records.append({
+                        'row':row_number,
+                        'data': row,
+                        'errors':{'country':f'Country "{country_value}" not found or invalid.'}
+                    })
+                    continue
+
+
+                status_value = form_data.get('status','').sreip().lower()
+                status_obj = status_map.get(status_value)
+
+                if status_obj:
+                    form_data['status'] = status_obj.pk
+                else:
+                    error_records.append({
+                        'row':row_number,
+                        'data': row,
+                        'errors':{'status':f'Status "{status_value}" not found or invalid.'}
+                    })
+                    continue
+
     
                 form = SupplierForm(form_data)
     
